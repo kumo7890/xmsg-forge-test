@@ -1,0 +1,58 @@
+name: Forge PoC — XmsgSender Forgery Test
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  forge-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: Install dependencies
+        run: |
+          cd xmsg-forge-test
+          forge install foundry-rs/forge-std --no-commit
+
+      - name: Run unit tests (no RPC needed)
+        run: |
+          cd xmsg-forge-test
+          forge test --match-test "testUnit|testFuzz|testPatch" -vvvv
+
+      - name: Confirm ORMP relay on-chain
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: |
+          cast call 0x2cd1867fb8016f93710b6386f7f9f1d540a60812 \
+               "ORMP()(address)" \
+               --rpc-url $ETH_RPC_URL
+
+      - name: Confirm registered peer for Arbitrum (chainId 42161)
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: |
+          cast call 0x2cd1867fb8016f93710b6386f7f9f1d540a60812 \
+               "peerOf(uint256)(address)" 42161 \
+               --rpc-url $ETH_RPC_URL
+
+      - name: Run fork tests (mainnet)
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: |
+          cd xmsg-forge-test
+          forge test \
+            --fork-url $ETH_RPC_URL \
+            --match-test testForge \
+            -vvvv
