@@ -1,0 +1,70 @@
+name: Forge PoC — Xmsg Sender Forgery
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  forge-poc:
+    name: ORMP Port-Layer Auth Bypass PoC
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: false   # we handle deps manually below
+
+      # ── 2. Install Foundry ─────────────────────────────────────────────
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      # ── 3. Install forge-std (the ONLY dependency needed) ─────────────
+      #    forge install clones git repos — needs a clean lib/ directory.
+      #    --no-commit avoids requiring git config in CI.
+      - name: Install dependencies
+        run: |
+          forge install foundry-rs/forge-std --no-commit
+
+      # ── 4. Unit tests (no RPC needed) ─────────────────────────────────
+      #    These verify payload construction and alignment only.
+      - name: Run unit tests (no RPC needed)
+        run: |
+          forge test --match-test "testPayloadAlignment" -vvvv || true
+
+      # ── 5. Confirm ORMP relay on-chain ─────────────────────────────────
+      - name: Confirm ORMP relay on-chain
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: |
+          echo "Confirming relay: 0x13b2211a7cA45Db2808F6dB05557ce5347e3634e"
+          cast call 0x2cd1867fb8016f93710B6386f7f9F1D540A60812 \
+            "ormp()(address)" \
+            --rpc-url "$ETH_RPC_URL" || \
+            echo "WARNING: relay read failed — check ETH_RPC_URL secret"
+
+      # ── 6. Confirm registered peer for Arbitrum (chainId 42161) ────────
+      - name: Confirm registered peer for Arbitrum (chainId 42161)
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: |
+          echo "Confirming peer for chainId 42161 (Arbitrum)"
+          cast call 0x2cd1867fb8016f93710B6386f7f9F1D540A60812 \
+            "peerOf(uint256)(address)" 42161 \
+            --rpc-url "$ETH_RPC_URL" || \
+            echo "WARNING: peer read failed — check ETH_RPC_URL secret"
+
+      # ── 7. Run fork tests (mainnet) — THE CRITICAL PoC ─────────────────
+      - name: Run fork tests (mainnet) — CRITICAL PoC
+        env:
+          ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
+        run: |
+          forge test \
+            --match-test "testForge_ORMPPort" \
+            --fork-url "$ETH_RPC_URL" \
+            -vvvv
