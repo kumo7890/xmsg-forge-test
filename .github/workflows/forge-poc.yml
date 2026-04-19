@@ -26,7 +26,7 @@ jobs:
         run: |
           git config --global user.email "ci@github.com"
           git config --global user.name "GitHub CI"
-          forge install foundry-rs/forge-std --no-commit
+          forge install foundry-rs/forge-std
 
       - name: Run unit tests (no RPC needed)
         run: |
@@ -36,21 +36,19 @@ jobs:
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
-          echo "Confirming relay: 0x13b2211a7cA45Db2808F6dB05557ce5347e3634e"
           cast call 0x2cd1867fb8016f93710B6386f7f9F1D540A60812 \
             "ormp()(address)" \
             --rpc-url "$ETH_RPC_URL" || \
-            echo "WARNING: relay read failed — check ETH_RPC_URL secret"
+            echo "WARNING: relay read failed"
 
       - name: Confirm registered peer for Arbitrum (chainId 42161)
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
-          echo "Confirming peer for chainId 42161 (Arbitrum)"
           cast call 0x2cd1867fb8016f93710B6386f7f9F1D540A60812 \
             "peerOf(uint256)(address)" 42161 \
             --rpc-url "$ETH_RPC_URL" || \
-            echo "WARNING: peer read failed — check ETH_RPC_URL secret"
+            echo "WARNING: peer read failed"
 
       - name: Run fork tests (mainnet) — CRITICAL PoC
         env:
