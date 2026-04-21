@@ -14,7 +14,8 @@ interface IORMPPort {
 contract PortAuthCapture {
     bool public authPassed;
 
-    fallback(bytes calldata) external payable returns (bytes memory) {
+    fallback(bytes calldata) external payable 
+    returns (bytes memory) {
         authPassed = true;
         return "";
     }
@@ -25,7 +26,7 @@ contract PortAuthCapture {
 contract XmsgSenderForgeTest is Test {
 
     address constant TARGET =
-        0x2cd1867fb8016f93710b6386f7f9f1d540a60812;
+        0x2cd1867Fb8016f93710B6386f7f9F1D540A60812;
     address constant RELAY =
         0x13b2211a7cA45Db2808F6dB05557ce5347e3634e;
     address constant PEER =
@@ -51,8 +52,16 @@ contract XmsgSenderForgeTest is Test {
             bytes20(PEER)
         );
 
-        assertEq(payload.length, 64, "payload must be 64 bytes");
-        assertEq(payload.length % 32, 0, "payload must be aligned");
+        assertEq(
+            payload.length, 
+            64, 
+            "payload must be 64 bytes"
+        );
+        assertEq(
+            payload.length % 32, 
+            0, 
+            "payload must be aligned"
+        );
 
         vm.prank(RELAY);
         (bool ok,) = TARGET.call(
