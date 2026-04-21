@@ -10,23 +10,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
 
       - name: Install dependencies
-        run: forge install foundry-rs/forge-std --no-commit
+        run: |
+          forge install foundry-rs/forge-std \
+            --no-commit
 
-      - name: Run unit tests (no RPC needed)
+      - name: Build
         run: forge build
 
       - name: Confirm ORMP relay on-chain
         run: |
-          echo "TARGET=0x2cd1867fb8016f93710B6386f7f9F1D540A60812"
-          echo "RELAY=0x13b2211a7cA45Db2808F6dB05557ce5347e3634e"
+          echo "TARGET=0x2cd1867fb80\
+          16f93710B6386f7f9F1D540A60812"
+          echo "RELAY=0x13b2211a7cA4\
+          5Db2808F6dB05557ce5347e3634e"
 
-      - name: Confirm registered peer for Arbitrum (chainId 42161)
-        run: echo "PEER=0x2cd1867Fb8016f93710B6386f7f9F1D540A60812"
+      - name: Confirm registered peer
+        run: |
+          echo "PEER=0x2cd1867Fb801\
+          6f93710B6386f7f9F1D540A60812"
+          echo "CHAIN_ID=42161"
 
       - name: Run fork tests (mainnet)
         env:
