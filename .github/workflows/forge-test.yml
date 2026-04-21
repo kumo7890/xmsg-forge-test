@@ -28,23 +28,20 @@ jobs:
 
       - name: Confirm ORMP relay on-chain
         run: |
-          echo "TARGET=0x2cd1867fb80\
-          16f93710B6386f7f9F1D540A60812"
-          echo "RELAY=0x13b2211a7cA4\
-          5Db2808F6dB05557ce5347e3634e"
+          echo "TARGET=0x2cd1867Fb8016f93710B6386f7f9F1D540A60812"
+          echo "RELAY=0x13b2211a7cA45Db2808F6dB05557ce5347e3634e"
 
       - name: Confirm registered peer
         run: |
-          echo "PEER=0x2cd1867Fb801\
-          6f93710B6386f7f9F1D540A60812"
+          echo "PEER=0x2cd1867Fb8016f93710B6386f7f9F1D540A60812"
           echo "CHAIN_ID=42161"
 
-      - name: Run fork tests (mainnet)
+      - name: Run fork tests (mainnet) — CRITICAL PoC
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
           forge test \
-            --match-test testForge_ORMPPort \
+            --match-test testForge_ORMPPort_v13 \
             --fork-url $ETH_RPC_URL \
             -vvvv
 
