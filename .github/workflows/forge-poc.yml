@@ -30,22 +30,26 @@ jobs:
 
       - name: Run unit tests (no RPC needed)
         run: |
-          forge test --match-test "testPayloadAlignment" -vvvv || true
+          forge test \
+            --match-test "testPayloadAlignment" \
+            -vvvv || true
 
       - name: Confirm ORMP relay on-chain
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
-          cast call 0x2cd1867fb8016f93710B6386f7f9F1D540A60812 \
+          cast call \
+            0x2cd1867Fb8016f93710B6386f7f9F1D540A60812 \
             "ormp()(address)" \
             --rpc-url "$ETH_RPC_URL" || \
             echo "WARNING: relay read failed"
 
-      - name: Confirm registered peer for Arbitrum (chainId 42161)
+      - name: Confirm registered peer for Arbitrum
         env:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
-          cast call 0x2cd1867fb8016f93710B6386f7f9F1D540A60812 \
+          cast call \
+            0x2cd1867Fb8016f93710B6386f7f9F1D540A60812 \
             "peerOf(uint256)(address)" 42161 \
             --rpc-url "$ETH_RPC_URL" || \
             echo "WARNING: peer read failed"
@@ -55,6 +59,6 @@ jobs:
           ETH_RPC_URL: ${{ secrets.ETH_RPC_URL }}
         run: |
           forge test \
-            --match-test "testForge_ORMPPort" \
+            --match-test "testForge_ORMPPort_v13" \
             --fork-url "$ETH_RPC_URL" \
             -vvvv
